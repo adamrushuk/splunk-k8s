@@ -1,0 +1,12 @@
+# Misc
+/temp
+*.lic
+
+# Terraform
+.terraform/
+terraform.tfvars
+*.tfstate
+*.tfstate.backup
+terraform.tfstate.d/
+terraform.log
+tfplan

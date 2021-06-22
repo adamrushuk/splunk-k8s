@@ -13,6 +13,7 @@ Repo for testing Splunk on Kubernetes.
     - [Non-admin Installation](#non-admin-installation)
   - [Install Splunk Deployment](#install-splunk-deployment)
   - [Get Admin Password](#get-admin-password)
+- [View Web Interface (port-forward pods)](#view-web-interface-port-forward-pods)
 - [Start/Stop AKS Cluster](#startstop-aks-cluster)
 - [Uninstall](#uninstall)
   - [Uninstall Splunk Deployment](#uninstall-splunk-deployment)
@@ -89,8 +90,11 @@ kubectl create configmap splunk-licenses --namespace sok --from-file=enterprise.
 Deploy a Splunk Validated Architecture from here: https://github.com/splunk/splunk-operator/tree/develop/deploy/examples/advanced
 
 ```bash
-# deploy c1 example
+# [option 1] deploy c1 example
 kubectl apply --namespace sok -f examples/validated-arch/c1.yaml
+
+# [option 2] deploy c1 custom example
+kubectl apply --namespace sok -f examples/validated-arch/c1-custom.yaml
 ```
 
 ### Get Admin Password
@@ -108,7 +112,20 @@ by running the following code:
 kubectl get secret --namespace sok splunk-sok-secret -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
 ```
 
+## View Web Interface (port-forward pods)
+
+Use port-forwarding on the pods to view their web interface:
+
+```bash
+# view pods on http://localhost:8000/
+# (NOTE: you cannot use the same port more than once)
+kubectl port-forward --namespace sok splunk-cm-example-cluster-master-0 8000
+kubectl port-forward --namespace sok splunk-lm-example-license-master-0 8000
+```
+
 ## Start/Stop AKS Cluster
+
+Use the commands below to stop and start the AKS cluster:
 
 ```bash
 # show current aks power state

@@ -1,0 +1,117 @@
+# c1 validated arch with custom fast storage and extra search es node
+# source: https://github.com/splunk/splunk-operator/blob/develop/deploy/examples/advanced/c1.yaml
+apiVersion: enterprise.splunk.com/v1
+kind: LicenseMaster
+metadata:
+  name: lm-example
+  finalizers:
+    - enterprise.splunk.com/delete-pvc
+spec:
+  volumes:
+    - name: licenses
+      configMap:
+        name: splunk-licenses
+  licenseUrl: /mnt/licenses/enterprise.lic
+  etcVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 8Gi
+  varVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 32Gi
+---
+apiVersion: enterprise.splunk.com/v1
+kind: ClusterMaster
+metadata:
+  name: cm-example
+  finalizers:
+    - enterprise.splunk.com/delete-pvc
+spec:
+  licenseMasterRef:
+    name: lm-example
+  etcVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 8Gi
+  varVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 32Gi
+---
+apiVersion: enterprise.splunk.com/v1
+kind: IndexerCluster
+metadata:
+  name: idxc-example
+  finalizers:
+    - enterprise.splunk.com/delete-pvc
+spec:
+  replicas: 3
+  clusterMasterRef:
+    name: cm-example
+  licenseMasterRef:
+    name: lm-example
+  etcVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 32Gi
+  varVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 1024Gi
+---
+apiVersion: enterprise.splunk.com/v1
+kind: Standalone
+metadata:
+  name: search-example
+  finalizers:
+    - enterprise.splunk.com/delete-pvc
+spec:
+  clusterMasterRef:
+    name: cm-example
+  licenseMasterRef:
+    name: lm-example
+  etcVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 32Gi
+  varVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 64Gi
+---
+apiVersion: enterprise.splunk.com/v1
+kind: Standalone
+metadata:
+  name: search-es-example
+  finalizers:
+    - enterprise.splunk.com/delete-pvc
+spec:
+  clusterMasterRef:
+    name: cm-example
+  licenseMasterRef:
+    name: lm-example
+  etcVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 32Gi
+  varVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 64Gi
+---
+apiVersion: enterprise.splunk.com/v1
+kind: Standalone
+metadata:
+  name: hwf-example
+  finalizers:
+    - enterprise.splunk.com/delete-pvc
+spec:
+  clusterMasterRef:
+    name: cm-example
+  licenseMasterRef:
+    name: lm-example
+  etcVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 32Gi
+  varVolumeStorageConfig:
+    storageClassName: managed-premium
+    storageCapacity: 64Gi
+  replicas: 1
+  defaults: |-
+    splunk:
+      set_search_peers: false
+
+# by default, setting the clusterMasterRef will establish a Search and Forwarding relationship from the Standalone
+# to the Indexer Cluster.
+# use set_search_peers: false to disable the HWF from also searching the Indexer Cluster

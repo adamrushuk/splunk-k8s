@@ -8,10 +8,12 @@ Repo for testing Splunk on Kubernetes.
 
 - [Install](#install)
   - [Build AKS Cluster with Terraform](#build-aks-cluster-with-terraform)
+  - [Connect to AKS Cluster](#connect-to-aks-cluster)
   - [Install Splunk Operator](#install-splunk-operator)
     - [Non-admin Installation](#non-admin-installation)
   - [Install Splunk Deployment](#install-splunk-deployment)
   - [Get Admin Password](#get-admin-password)
+- [Start/Stop AKS Cluster](#startstop-aks-cluster)
 - [Uninstall](#uninstall)
   - [Uninstall Splunk Deployment](#uninstall-splunk-deployment)
   - [Uninstall Splunk Operator](#uninstall-splunk-operator)
@@ -36,6 +38,18 @@ terraform apply
 # Outputs
 terraform output
 ```
+
+### Connect to AKS Cluster
+
+The terraform output command below will return the az cli command required to get aks credentials:
+
+```bash
+# output the az cli command required to get aks credentials
+terraform output aks_credentials_command
+```
+
+**Example:**  
+`az aks get-credentials --resource-group <AKS_RESOURCE_GROUP_NAME> --name <AKS_CLUSTER_NAME> --overwrite-existing --admin`
 
 ### Install Splunk Operator
 
@@ -91,7 +105,20 @@ You can also [show all global secret values](https://github.com/splunk/splunk-op
 by running the following code:
 
 ```bash
-kubectl get secret --namespace sok splunk-sok-secret -o go-template=' {{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+kubectl get secret --namespace sok splunk-sok-secret -o go-template='{{range $k,$v := .data}}{{printf "%s: " $k}}{{if not $v}}{{$v}}{{else}}{{$v | base64decode}}{{end}}{{"\n"}}{{end}}'
+```
+
+## Start/Stop AKS Cluster
+
+```bash
+# show current aks power state
+az aks show --name <AKS_CLUSTER_NAME> --resource-group <AKS_RESOURCE_GROUP_NAME> --query "powerState"
+
+# stop aks cluster
+az aks stop --name <AKS_CLUSTER_NAME> --resource-group <AKS_RESOURCE_GROUP_NAME>
+
+# start aks cluster
+az aks start --name <AKS_CLUSTER_NAME> --resource-group <AKS_RESOURCE_GROUP_NAME>
 ```
 
 ## Uninstall
